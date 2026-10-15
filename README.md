@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Addis Eats — Upgraded Next.js Demo
 
-## Getting Started
+A responsive Ethiopian food ordering coursework application built with Next.js App Router, React, JavaScript, and CSS.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Home page and featured dishes
+- Searchable menu and category filters
+- Dish detail pages
+- Shopping cart with quantity controls and totals
+- Checkout form with client-side validation
+- Demo customer and kitchen sign-in
+- Demo order history and status progress
+- Kitchen dashboard with order status controls
+- Responsive layouts and basic SEO metadata
+
+## Run locally
+
+Use Node.js 20.9 or newer.
+
+```powershell
+npm.cmd install
+npm.cmd run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Build for production:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm.cmd run build
+npm.cmd start
+```
 
-## Learn More
+## Demo sign-in
 
-To learn more about Next.js, take a look at the following resources:
+Customer:
+- Email: `customer@addiseats.com`
+- Password: `Customer2026!`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Kitchen:
+- Email: `kitchen@addiseats.com`
+- Password: `Kitchen2026!`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Important limitations
 
-## Deploy on Vercel
+This is a learning/demo project, not a production ordering system. The cart, demo session, and orders use browser localStorage. Customer login is a hardcoded client-side demonstration and is not secure authentication. Data is local to the browser and does not synchronize between different users or devices. The kitchen dashboard can only see orders created in the same browser storage. There is no payment processing, real delivery dispatch, database, or server-side access control. Do not use these demo credentials or this authentication design for real customers.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For a production version, implement server-side authentication with hashed passwords, a database, secure HTTP-only session cookies, server-side authorization, input validation, rate limiting, and a real payment/delivery integration.

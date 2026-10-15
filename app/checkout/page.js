@@ -1,74 +1,29 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/session";
-import { dishes } from "@/lib/dishes";
-import { placeOrder } from "@/app/order-actions";
-export const instant = false;
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { useStore } from "@/components/StoreProvider";
+import { formatBirr } from "@/lib/dishes";
 
-export const metadata = {
-  title: "Checkout | Addis Eats",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
-
-export default async function CheckoutPage() {
-  const session = await getSession();
-
-  if (!session) {
-    redirect("/signin?next=%2Fcheckout");
+export default function CheckoutPage() {
+  const router = useRouter();
+  const { cart, cartTotal, placeOrder, user, ready } = useStore();
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+  const [form, setForm] = useState({ name: user?.name || "", email: user?.email || "", phone: "", address: "", notes: "" });
+  function change(event) { setForm({ ...form, [event.target.name]: event.target.value }); }
+  function submit(event) {
+    event.preventDefault();
+    if (!cart.length) { setError("Your cart is empty. Add a dish before checking out."); return; }
+    if (!form.name.trim() || !form.email.includes("@") || !form.phone.trim() || !form.address.trim()) { setError("Please complete your name, valid email, phone, and delivery address."); return; }
+    const order = placeOrder(form);
+    setDone(true);
+    setTimeout(() => router.push(`/orders?new=${order.id}`), 1200);
   }
-
-  if (session.role !== "customer") {
-    redirect("/");
-  }
-
-  return (
-    <main className="min-h-screen bg-orange-50 px-5 py-12 text-gray-900">
-      <div className="mx-auto max-w-2xl">
-        <Link href="/menu" className="font-semibold text-orange-700">
-          ← Back to Menu
-        </Link>
-
-        <h1 className="mt-6 text-4xl font-extrabold">Checkout</h1>
-
-        <p className="mt-3 text-gray-600">
-          Select a dish to create a demo order.
-        </p>
-
-        <form action={placeOrder} className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
-          <label htmlFor="dishId" className="mb-2 block font-semibold">
-            Select a dish
-          </label>
-
-          <select
-            id="dishId"
-            name="dishId"
-            required
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3"
-          >
-            {dishes.map((dish) => (
-              <option key={dish.id} value={dish.id}>
-                {dish.name} — {dish.price} ETB
-              </option>
-            ))}
-          </select>
-
-          <p className="mt-4 text-sm text-gray-500">
-            This coursework demo creates one item per order. Payment processing
-            is not implemented.
-          </p>
-
-          <button
-            type="submit"
-            className="mt-6 rounded-xl bg-orange-600 px-6 py-3 font-bold text-white hover:bg-orange-700"
-          >
-            Place Demo Order
-          </button>
-        </form>
-      </div>
-    </main>
-  );
+  if (!ready) return <section className="container page-section"><p>Loading checkout…</p></section>;
+  if (done) return <section className="container page-section success-state"><CheckCircle2 size={56} /><h1>Order received!</h1><p>Your demo order has been created. Taking you to your orders…</p></section>;
+  if (!cart.length) return <section className="container page-section empty-state"><h1>Your cart is empty</h1><p>Add dishes before checking out.</p><Link href="/menu" className="button button-primary">Browse menu</Link></section>;
+  return <section className="container page-section"><Link href="/cart" className="back-link"><ArrowLeft size={16} /> Back to cart</Link><div className="page-heading align-left checkout-heading"><span className="section-kicker">ALMOST THERE</span><h1>Let's get it <em>to you.</em></h1><p>Enter your delivery details to place your demo order.</p></div><div className="checkout-layout"><form className="checkout-form" onSubmit={submit}><h2>Delivery details</h2><div className="form-grid"><label>Full name<input name="name" value={form.name} onChange={change} required placeholder="Your name" /></label><label>Email address<input type="email" name="email" value={form.email} onChange={change} required placeholder="you@example.com" /></label><label>Phone number<input name="phone" value={form.phone} onChange={change} required placeholder="+251 9..." /></label><label className="full-field">Delivery address<textarea name="address" value={form.address} onChange={change} required rows="3" placeholder="Street, area, landmark..." /></label><label className="full-field">Delivery notes <span className="optional-label">(optional)</span><textarea name="notes" value={form.notes} onChange={change} rows="2" placeholder="Anything the kitchen or courier should know?" /></label></div>{error && <p className="form-error" role="alert">{error}</p>}<button className="button button-primary button-full" type="submit">Place demo order · {formatBirr(cartTotal + 50)}</button><p className="demo-notice">Coursework demo only: this does not process real payments or dispatch a delivery.</p></form><aside className="order-summary"><h2>Your order</h2>{cart.map((item) => <div className="checkout-item" key={item.id}><span>{item.emoji} {item.name} × {item.quantity}</span><b>{formatBirr(item.price * item.quantity)}</b></div>)}<div className="summary-line"><span>Subtotal</span><b>{formatBirr(cartTotal)}</b></div><div className="summary-line"><span>Delivery</span><b>{formatBirr(50)}</b></div><div className="summary-line summary-total"><span>Total</span><b>{formatBirr(cartTotal + 50)}</b></div></aside></div></section>;
 }

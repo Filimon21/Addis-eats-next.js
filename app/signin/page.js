@@ -1,104 +1,28 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/session";
-import { signIn } from "@/app/actions";
-export const instant = false;
+import { LockKeyhole, UtensilsCrossed } from "lucide-react";
+import { useStore } from "@/components/StoreProvider";
 
-export const metadata = {
-  title: "Sign In | Addis Eats",
-  description: "Sign in to your Addis Eats account.",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
-export default async function SignInPage({ searchParams }) {
-  const session = await getSession();
-
-  if (session) {
-    redirect(session.role === "kitchen" ? "/kitchen" : "/orders");
+export default function SignInPage() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const { signIn } = useStore();
+  const [email, setEmail] = useState("customer@addiseats.com");
+  const [password, setPassword] = useState("Customer2026!");
+  const [error, setError] = useState("");
+  const [showKitchen, setShowKitchen] = useState(false);
+  function submit(event) {
+    event.preventDefault();
+    const customer = email.trim().toLowerCase() === "customer@addiseats.com" && password === "Customer2026!";
+    const kitchen = email.trim().toLowerCase() === "kitchen@addiseats.com" && password === "Kitchen2026!";
+    if (!customer && !kitchen) { setError("Email or password is incorrect. Use one of the demo accounts shown below."); return; }
+    const user = signIn(email.trim().toLowerCase(), kitchen ? "kitchen" : "customer");
+    const requested = params.get("next");
+    const safeNext = requested && requested.startsWith("/") && !requested.startsWith("//") ? requested : (user.role === "kitchen" ? "/kitchen" : "/orders");
+    router.push(safeNext);
   }
-
-  const params = await searchParams;
-  const next = typeof params.next === "string" ? params.next : "";
-  const hasError = params.error === "invalid";
-
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-orange-50 px-5 py-12 text-gray-900">
-      <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        <Link href="/" className="font-bold text-orange-600">
-          ← Addis Eats
-        </Link>
-
-        <h1 className="mt-6 text-3xl font-extrabold">Welcome Back</h1>
-
-        <p className="mt-2 text-gray-600">
-          Sign in to access your account.
-        </p>
-
-        {hasError && (
-          <p
-            role="alert"
-            className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700"
-          >
-            Invalid email or password. Please try again.
-          </p>
-        )}
-
-        <form action={signIn} className="mt-7 space-y-5">
-          <input type="hidden" name="next" value={next} />
-
-          <div>
-            <label htmlFor="email" className="mb-2 block font-semibold">
-              Email
-            </label>
-
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="username"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="mb-2 block font-semibold">
-              Password
-            </label>
-
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-orange-600 px-5 py-3 font-bold text-white hover:bg-orange-700"
-          >
-            Sign In
-          </button>
-        </form>
-
-        <div className="mt-7 rounded-xl bg-orange-50 p-4 text-sm">
-          <p className="font-bold">Demo Customer</p>
-          <p>customer@addiseats.com</p>
-          <p>Customer2026!</p>
-
-          <p className="mt-4 font-bold">Demo Kitchen Staff</p>
-          <p>kitchen@addiseats.com</p>
-          <p>Kitchen2026!</p>
-        </div>
-      </section>
-    </main>
-  );
+  return <section className="container signin-layout"><div className="signin-art"><div className="signin-art-icon"><UtensilsCrossed size={44} /></div><span className="section-kicker">WELCOME TO THE TABLE</span><h2>Good food.<br /><em>Good people.</em><br />Great memories.</h2><p>Come hungry. Leave happy.</p><div className="signin-decoration">🍛 🫓 ☕</div></div><div className="signin-panel"><span className="signin-icon"><LockKeyhole size={22} /></span><h1>Welcome <em>back.</em></h1><p>Sign in to continue to Addis Eats.</p><form className="signin-form" onSubmit={submit}><label>Email address<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>{error && <p className="form-error" role="alert">{error}</p>}<button className="button button-primary button-full" type="submit">Sign in</button></form><button className="demo-toggle" onClick={() => setShowKitchen(!showKitchen)}>{showKitchen ? "Hide" : "Show"} demo login credentials</button>{showKitchen && <div className="demo-credentials"><b>Customer</b><span>customer@addiseats.com</span><span>Customer2026!</span><hr /><b>Kitchen staff</b><span>kitchen@addiseats.com</span><span>Kitchen2026!</span></div>}<p className="signin-footnote">Demo authentication only. Accounts are hardcoded for coursework and are not secure for production use.</p><Link className="back-home" href="/">← Back to home</Link></div></section>;
 }

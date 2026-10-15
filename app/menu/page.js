@@ -1,43 +1,20 @@
-import Link from "next/link";
-import MenuBrowser from "./MenuBrowser";
-import { dishes } from "@/lib/dishes";
+"use client";
 
-export const metadata = {
-  title: "Menu | Addis Eats",
-  description:
-    "Explore traditional Ethiopian dishes, including Doro Wot, Tibs, Kitfo, Shiro, and Beyaynetu.",
-  openGraph: {
-    title: "Explore the Addis Eats Menu",
-    description: "Discover Ethiopian food and traditional flavors.",
-    type: "website",
-  },
-};
+import { useMemo, useState } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
+import DishCard from "@/components/DishCard";
+import { categories, dishes } from "@/lib/dishes";
 
 export default function MenuPage() {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const filtered = useMemo(() => dishes.filter((dish) => (category === "All" || dish.category === category) && `${dish.name} ${dish.description} ${dish.category}`.toLowerCase().includes(query.toLowerCase())), [query, category]);
   return (
-    <main className="min-h-screen bg-orange-50 px-5 py-12 text-gray-900 md:px-12">
-      <div className="mx-auto max-w-6xl">
-        <Link href="/" className="font-semibold text-orange-700">
-          ← Back to Home
-        </Link>
-
-        <header className="mb-10 mt-8">
-          <p className="font-semibold uppercase tracking-widest text-orange-600">
-            Eat Local. Eat Happy.
-          </p>
-
-          <h1 className="mt-3 text-4xl font-extrabold md:text-5xl">
-            Our Ethiopian Menu
-          </h1>
-
-          <p className="mt-4 max-w-2xl leading-7 text-gray-600">
-            Discover the flavors of Ethiopia, from traditional favorites to
-            delicious vegetarian dishes.
-          </p>
-        </header>
-
-        <MenuBrowser initialDishes={dishes} />
-      </div>
-    </main>
+    <section className="page-section container">
+      <div className="page-heading"><span className="section-kicker">MADE FRESH, SERVED WITH LOVE</span><h1>Explore our <em>menu.</em></h1><p>Discover your next favorite, from Ethiopian classics to refreshing drinks.</p></div>
+      <div className="menu-toolbar"><label className="search-box"><Search size={19} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search dishes..." aria-label="Search dishes" /></label><span className="result-count"><SlidersHorizontal size={16} /> {filtered.length} dishes</span></div>
+      <div className="category-pills">{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={category === item ? "category-pill selected" : "category-pill"}>{item}</button>)}</div>
+      {filtered.length ? <div className="dish-grid">{filtered.map((dish) => <DishCard key={dish.id} dish={dish} />)}</div> : <div className="empty-state"><span>🔎</span><h2>No dishes found</h2><p>Try another search or category.</p><button className="button button-primary" onClick={() => { setQuery(""); setCategory("All"); }}>Clear filters</button></div>}
+    </section>
   );
 }

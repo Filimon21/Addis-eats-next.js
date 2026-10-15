@@ -1,103 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/session";
-import { getAllOrders } from "@/lib/orders";
-import { updateKitchenOrderStatus } from "@/app/order-actions";
-import { signOut } from "@/app/actions";
-export const instant = false;
+import { useStore } from "@/components/StoreProvider";
+import { formatBirr } from "@/lib/dishes";
+import { ChefHat, ShieldAlert, ArrowRight } from "lucide-react";
 
-export const metadata = {
-  title: "Kitchen Dashboard | Addis Eats",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+const statuses = ["Received", "Preparing", "Ready", "Completed"];
 
-
-export default async function KitchenPage() {
-  const session = await getSession();
-
-  if (!session) {
-    redirect("/signin?next=%2Fkitchen");
-  }
-
-  if (session.role !== "kitchen") {
-    redirect("/");
-  }
-
-  const orders = getAllOrders();
-
-  return (
-    <main className="min-h-screen bg-orange-50 px-5 py-12 text-gray-900 md:px-12">
-      <div className="mx-auto max-w-5xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link href="/" className="font-semibold text-orange-700">
-            ← Home
-          </Link>
-
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="rounded-lg border border-gray-300 px-4 py-2 font-semibold"
-            >
-              Sign Out
-            </button>
-          </form>
-        </div>
-
-        <h1 className="mt-6 text-4xl font-extrabold">Kitchen Dashboard</h1>
-
-        <p className="mt-3 text-gray-600">
-          Review orders and update their status.
-        </p>
-
-        <div className="mt-8 space-y-5">
-          {orders.map((order) => (
-            <article
-              key={order.id}
-              className="rounded-2xl bg-white p-6 shadow-sm"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl font-bold">{order.id}</h2>
-                <span className="rounded-full bg-orange-100 px-3 py-1 text-sm text-orange-800">
-                  {order.status}
-                </span>
-              </div>
-
-              <ul className="mt-4 space-y-2 text-gray-600">
-                {order.items.map((item) => (
-                  <li key={item.dishId}>
-                    {item.name} × {item.quantity}
-                  </li>
-                ))}
-              </ul>
-
-              {order.status !== "Delivered" &&
-                order.status !== "Cancelled" && (
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    {["Preparing", "Ready", "Delivered"].map((status) => (
-                      <form
-                        key={status}
-                        action={async () => {
-                          "use server";
-                          await updateKitchenOrderStatus(order.id, status);
-                        }}
-                      >
-                        <button
-                          type="submit"
-                          className="rounded-lg bg-orange-600 px-4 py-2 font-semibold text-white hover:bg-orange-700"
-                        >
-                          Mark {status}
-                        </button>
-                      </form>
-                    ))}
-                  </div>
-                )}
-            </article>
-          ))}
-        </div>
-      </div>
-    </main>
-  );
+export default function KitchenPage() {
+  const { user, orders, updateOrderStatus, ready } = useStore();
+  if (!ready) return <section className="container page-section"><p>Loading kitchen…</p></section>;
+  if (user?.role !== "kitchen") return <section className="container page-section empty-state"><span><ShieldAlert size={42} /></span><h1>Kitchen access only</h1><p>Sign in with the demo kitchen staff account to manage orders.</p><Link href="/signin?next=/kitchen" className="button button-primary">Kitchen sign in <ArrowRight size={17} /></Link></section>;
+  return <section className="container page-section"><div className="page-heading align-left"><span className="section-kicker">BACK OF HOUSE</span><h1>Kitchen <em>dashboard.</em></h1><p>Review incoming orders and keep every meal moving.</p></div><div className="kitchen-stats"><div><span>All orders</span><b>{orders.length}</b></div><div><span>In progress</span><b>{orders.filter((o) => !["Completed"].includes(o.status)).length}</b></div><div><span>Completed</span><b>{orders.filter((o) => o.status === "Completed").length}</b></div></div>{!orders.length ? <div className="empty-state"><span><ChefHat size={40} /></span><h2>No orders have arrived</h2><p>Customer demo orders will appear here in this browser.</p><Link href="/menu" className="button button-primary">Preview menu</Link></div> : <div className="kitchen-orders">{orders.map((order) => <article className="kitchen-order" key={order.id}><div className="kitchen-order-header"><div><span className="order-id">{order.id}</span><h2>{order.details?.name || "Customer"}</h2><p>{order.customerEmail} · {order.details?.phone}</p></div><b>{formatBirr(order.total + 50)}</b></div><div className="kitchen-order-items">{order.items.map((item) => <span key={item.id}>{item.emoji} {item.name} × {item.quantity}</span>)}</div><p className="kitchen-address"><b>Delivery:</b> {order.details?.address}</p>{order.details?.notes && <p className="kitchen-address"><b>Notes:</b> {order.details.notes}</p>}<label className="status-select-label">Update status<select value={order.status} onChange={(event) => updateOrderStatus(order.id, event.target.value)}>{statuses.map((status) => <option key={status}>{status}</option>)}</select></label></article>)}</div>}</section>;
 }

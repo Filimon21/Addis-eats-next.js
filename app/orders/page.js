@@ -1,143 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/session";
-import { getOrdersForUser } from "@/lib/orders";
-import { cancelOrder } from "@/app/order-actions";
-import OrderStatus from "./OrderStatus";
-export const instant = false;
+import { PackageCheck, ArrowRight, Clock } from "lucide-react";
+import { useStore } from "@/components/StoreProvider";
+import { formatBirr } from "@/lib/dishes";
 
-export const metadata = {
-  title: "My Orders | Addis Eats",
-  description: "View your Addis Eats order history and status.",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+const steps = ["Received", "Preparing", "Ready", "Completed"];
 
-
-export default async function OrdersPage() {
-  const session = await getSession();
-
-  if (!session) {
-    redirect("/signin?next=%2Forders");
-  }
-
-  if (session.role !== "customer") {
-    redirect("/");
-  }
-
-  const orders = getOrdersForUser(session.id);
-
-  return (
-    <main className="min-h-screen bg-orange-50 px-5 py-12 text-gray-900 md:px-12">
-      <div className="mx-auto max-w-4xl">
-        <Link href="/" className="font-semibold text-orange-700">
-          ← Home
-        </Link>
-
-        <h1 className="mt-6 text-4xl font-extrabold">My Orders</h1>
-
-        <p className="mt-3 text-gray-600">
-          Welcome, {session.email}. Here are your orders.
-        </p>
-
-        {orders.length === 0 ? (
-          <div className="mt-8 rounded-2xl bg-white p-8 shadow-sm">
-            <p>You have no orders yet.</p>
-
-            <Link
-              href="/menu"
-              className="mt-4 inline-block font-semibold text-orange-700"
-            >
-              Explore the menu →
-            </Link>
-          </div>
-        ) : (
-          <div className="mt-8 space-y-5">
-            {orders.map((order) => {
-              const total = order.items.reduce(
-                (sum, item) => sum + item.price * item.quantity,
-                0,
-              );
-
-              return (
-                <article
-                  key={order.id}
-                  className="rounded-2xl bg-white p-6 shadow-sm"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h2 className="text-xl font-bold">{order.id}</h2>
-
-                    <OrderStatus
-                      orderId={order.id}
-                      initialStatus={order.status}
-                    />
-                  </div>
-
-                  <ul className="mt-4 space-y-2">
-                    {order.items.map((item) => (
-                      <li
-                        key={item.dishId}
-                        className="flex justify-between gap-4 text-gray-600"
-                      >
-                        <span>
-                          {item.name} × {item.quantity}
-                        </span>
-
-                        <span>{item.price * item.quantity} ETB</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-4 border-t pt-4 font-bold">
-                    Total: {total} ETB
-                  </div>
-
-                  {order.status === "Confirmed" && (
-                    <form
-                      action={async () => {
-                        "use server";
-                        await cancelOrder(order.id);
-                      }}
-                      className="mt-4"
-                    >
-                      <button
-                        type="submit"
-                        className="rounded-lg border border-red-300 px-4 py-2 font-semibold text-red-700 hover:bg-red-50"
-                      >
-                        Cancel Order
-                      </button>
-                    </form>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="mt-8 flex flex-wrap gap-4">
-          <Link
-            href="/menu"
-            className="rounded-xl bg-orange-600 px-6 py-3 font-semibold text-white"
-          >
-            Browse Menu
-          </Link>
-
-          <form action={async () => {
-            "use server";
-            const { signOut } = await import("@/app/actions");
-            await signOut();
-          }}>
-            <button
-              type="submit"
-              className="rounded-xl border border-gray-300 px-6 py-3 font-semibold"
-            >
-              Sign Out
-            </button>
-          </form>
-        </div>
-      </div>
-    </main>
-  );
+export default function OrdersPage() {
+  const { orders, user, ready } = useStore();
+  const visibleOrders = user?.role === "kitchen" ? orders : orders.filter((order) => !user || order.customerEmail === user.email);
+  if (!ready) return <section className="container page-section"><p>Loading orders…</p></section>;
+  return <section className="container page-section"><div className="page-heading align-left"><span className="section-kicker">YOUR FOOD JOURNEY</span><h1>My <em>orders.</em></h1><p>Keep up with the progress of your delicious choices.</p></div>{!visibleOrders.length ? <div className="empty-state"><span><PackageCheck size={40} /></span><h2>No orders yet</h2><p>Your next great meal is just around the corner.</p><Link href="/menu" className="button button-primary">Browse menu <ArrowRight size={17} /></Link></div> : <div className="orders-list">{visibleOrders.map((order) => <article className="order-card" key={order.id}><div className="order-card-top"><div><span className="order-id">{order.id}</span><h2>{order.items.map((item) => `${item.name} × ${item.quantity}`).join(", ")}</h2><p><Clock size={14} /> {new Date(order.createdAt).toLocaleString()}</p></div><span className={`status-badge status-${order.status.toLowerCase()}`}>{order.status}</span></div><div className="order-progress">{steps.map((step, index) => <div key={step} className={`progress-step ${steps.indexOf(order.status) >= index ? "progress-done" : ""}`}><span>{index + 1}</span><small>{step}</small></div>)}</div><div className="order-card-bottom"><span>Total <b>{formatBirr(order.total + 50)}</b></span><span>Deliver to: {order.details?.address || "Address not provided"}</span></div></article>)}</div>}</section>;
 }

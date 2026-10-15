@@ -1,152 +1,49 @@
 import Link from "next/link";
-
-const siteUrl = (
-process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-).replace(/\/+$/, "");
-
-const structuredData = {
-"@context": "https://schema.org",
-"@type": "WebSite",
-name: "Addis Eats",
-description:
-"Discover Ethiopian dishes, explore traditional flavors, and order your favorites with Addis Eats.",
-url: siteUrl,
-};
-
-export const metadata = {
-metadataBase: new URL(siteUrl),
-title: "Addis Eats | Ethiopian Food Ordering",
-description:
-"Discover delicious Ethiopian food, explore traditional dishes, and enjoy a great food experience with Addis Eats.",
-openGraph: {
-title: "Addis Eats | Ethiopian Food Ordering",
-description:
-"Discover Ethiopian dishes and explore traditional flavors.",
-url: siteUrl,
-siteName: "Addis Eats",
-type: "website",
-},
-twitter: {
-card: "summary",
-title: "Addis Eats | Ethiopian Food Ordering",
-description:
-"Discover Ethiopian dishes and explore traditional flavors.",
-},
-};
+import { ArrowRight, BadgeCheck, Bike, HeartHandshake, Leaf, Star } from "lucide-react";
+import DishCard from "@/components/DishCard";
+import { dishes } from "@/lib/dishes";
 
 export default function HomePage() {
-return ( <main className="min-h-screen bg-orange-50 text-gray-900">
-<script
-type="application/ld+json"
-dangerouslySetInnerHTML={{
-__html: JSON.stringify(structuredData).replace(/</g, "\u003c"),
-}}
-/>
-
-```
-  <header className="flex items-center justify-between border-b bg-white px-6 py-5 md:px-12">
-    <Link href="/" className="text-2xl font-bold text-orange-600">
-      Addis Eats
-    </Link>
-
-    <nav className="flex items-center gap-5">
-      <Link href="/menu" className="hover:text-orange-600">
-        Menu
-      </Link>
-
-      <Link href="/signin" className="hover:text-orange-600">
-        Sign In
-      </Link>
-    </nav>
-  </header>
-
-  <section className="mx-auto max-w-6xl px-6 py-20 text-center md:py-32">
-    <p className="mb-4 font-semibold uppercase tracking-widest text-orange-600">
-      Authentic Ethiopian Flavors
-    </p>
-
-    <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight md:text-6xl">
-      Eat Local. <span className="text-orange-600">Eat Happy.</span>
-    </h1>
-
-    <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-      Discover your favorite Ethiopian dishes, explore traditional flavors,
-      and enjoy a delicious food experience with Addis Eats.
-    </p>
-
-    <div className="mt-9 flex flex-wrap justify-center gap-4">
-      <Link
-        href="/menu"
-        className="rounded-xl bg-orange-600 px-7 py-4 font-semibold text-white hover:bg-orange-700"
-      >
-        Explore Our Menu
-      </Link>
-
-      <Link
-        href="/signin"
-        className="rounded-xl border border-orange-600 px-7 py-4 font-semibold text-orange-700 hover:bg-orange-100"
-      >
-        Sign In
-      </Link>
-    </div>
-
-    <div className="mx-auto mt-16 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3">
-      <article className="overflow-hidden rounded-2xl bg-white text-left shadow-sm transition-shadow hover:shadow-lg">
-        <img
-          src="https://images.unsplash.com/photo-1547592180-85f173990554?w=800&auto=format&fit=crop"
-          alt="A delicious meal with fresh ingredients"
-          className="h-48 w-full object-cover"
-          loading="lazy"
-        />
-
-        <div className="p-6">
-          <h2 className="font-bold">Traditional Food</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Explore delicious traditional food and local favorites.
-          </p>
+  const featured = dishes.slice(0, 4);
+  return (
+    <>
+      <section className="hero">
+        <div className="hero-bg-shape shape-one" /><div className="hero-bg-shape shape-two" />
+        <div className="container hero-grid">
+          <div className="hero-copy">
+            <div className="eyebrow"><span className="eyebrow-dot" /> YOUR TABLE, OUR TRADITION</div>
+            <h1>A taste of Ethiopia,<br /><em>delivered with love.</em></h1>
+            <p className="hero-text">From the first tear of injera to the last sip of buna, discover the flavors that bring us together.</p>
+            <div className="hero-actions"><Link href="/menu" className="button button-primary">Explore the menu <ArrowRight size={18} /></Link><Link href="#our-story" className="button button-secondary">Our story</Link></div>
+            <div className="hero-proof"><div className="avatar-stack"><span>👩🏽</span><span>👨🏾</span><span>👩🏾</span></div><div><div className="proof-stars"><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><b>4.9/5</b></div><small>Loved by local food lovers</small></div></div>
+          </div>
+          <div className="hero-visual">
+            <div className="hero-food-circle"><span className="hero-food-emoji">🍛</span><span className="food-spark spark-a">✦</span><span className="food-spark spark-b">✦</span></div>
+            <div className="floating-note note-top"><span className="note-icon">🌶️</span><span><b>Authentic flavor</b><small>Tradition in every bite</small></span></div>
+            <div className="floating-note note-bottom"><span className="note-icon green-note">🌿</span><span><b>Fresh every day</b><small>Locally sourced goodness</small></span></div>
+            <div className="hero-circle-caption">ETHIOPIAN<br />SOUL FOOD</div>
+          </div>
         </div>
-      </article>
+        <div className="hero-bottom-line"><span>በፍቅር የተሰራ</span><span>FRESH · LOCAL · ETHIOPIAN</span></div>
+      </section>
 
-      <article className="overflow-hidden rounded-2xl bg-white text-left shadow-sm transition-shadow hover:shadow-lg">
-        <img
-          src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop"
-          alt="Fresh vegetables and a colorful meal"
-          className="h-48 w-full object-cover"
-          loading="lazy"
-        />
-
-        <div className="p-6">
-          <h2 className="font-bold">Fresh Flavors</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Discover delicious dishes for every taste.
-          </p>
+      <section className="benefits">
+        <div className="container benefit-grid">
+          <div className="benefit"><span className="benefit-icon"><Leaf /></span><div><b>Fresh ingredients</b><small>Local produce, daily</small></div></div>
+          <div className="benefit"><span className="benefit-icon"><HeartHandshake /></span><div><b>Made with care</b><small>Recipes full of heritage</small></div></div>
+          <div className="benefit"><span className="benefit-icon"><Bike /></span><div><b>Easy ordering</b><small>Your favorites, a few clicks away</small></div></div>
+          <div className="benefit"><span className="benefit-icon"><BadgeCheck /></span><div><b>Quality first</b><small>Every meal matters</small></div></div>
         </div>
-      </article>
+      </section>
 
-      <article className="overflow-hidden rounded-2xl bg-white text-left shadow-sm transition-shadow hover:shadow-lg">
-        <img
-          src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop"
-          alt="A freshly prepared meal"
-          className="h-48 w-full object-cover"
-          loading="lazy"
-        />
+      <section className="section container" id="featured">
+        <div className="section-heading"><div><span className="section-kicker">FROM OUR KITCHEN</span><h2>Favorites worth <em>sharing.</em></h2><p>Comforting classics and local favorites, freshly prepared for you.</p></div><Link href="/menu" className="text-link">View full menu <ArrowRight size={17} /></Link></div>
+        <div className="dish-grid">{featured.map((dish) => <DishCard key={dish.id} dish={dish} />)}</div>
+      </section>
 
-        <div className="p-6">
-          <h2 className="font-bold">Easy Ordering</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Enjoy a convenient food-ordering experience with Addis Eats.
-          </p>
-        </div>
-      </article>
-    </div>
-  </section>
+      <section className="story-section" id="our-story"><div className="container story-grid"><div className="story-visual"><div className="story-plate">🫓<span>❤️</span></div><div className="story-stamp">ROOTED IN<br />TRADITION</div></div><div className="story-copy"><span className="section-kicker">A LITTLE ABOUT US</span><h2>Food tastes better<br />when it brings us <em>together.</em></h2><p>Addis Eats celebrates the dishes, rituals, and warm hospitality that make Ethiopian food special. We bring familiar favorites and new discoveries to your table, one delicious meal at a time.</p><Link href="/menu" className="button button-primary">Find your favorite <ArrowRight size={18} /></Link></div></div></section>
 
-  <footer className="border-t bg-white px-6 py-6 text-center text-sm text-gray-500">
-    © 2026 Addis Eats. Built with Next.js.
-  </footer>
-</main>
-
-
-);
+      <section className="cta-section container"><div><span className="section-kicker">HUNGRY YET?</span><h2>Your next favorite meal<br />is waiting for you.</h2></div><Link href="/menu" className="button button-light">Order something delicious <ArrowRight size={18} /></Link></section>
+    </>
+  );
 }
-
